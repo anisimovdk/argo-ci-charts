@@ -1,0 +1,62 @@
+{{- include "argo-ci-trigger.validateEventSource" . -}}
+{{- $webhookSecretFromExternal := false -}}
+{{- if hasKey .Values.externalSecrets "webhook-secret" -}}
+  {{- $webhookSecret := index .Values.externalSecrets "webhook-secret" -}}
+  {{- if $webhookSecret.create -}}
+    {{- $webhookSecretFromExternal = true -}}
+  {{- end -}}
+{{- end -}}
+{{- $apiTokenFromExternal := false -}}
+{{- if hasKey .Values.externalSecrets "api-token" -}}
+  {{- $apiToken := index .Values.externalSecrets "api-token" -}}
+  {{- if $apiToken.create -}}
+    {{- $apiTokenFromExternal = true -}}
+  {{- end -}}
+{{- end -}}
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: {{ include "argo-ci-trigger.fullname" . }}
+  labels:
+    {{- include "argo-ci-trigger.labels" . | nindent 4 }}
+spec:
+  eventBusName: {{ .Values.eventBusName }}
+  github:
+    {{ .Values.eventSource.github.configName | default (include "argo-ci-trigger.fullname" .) }}:
+      repositories:
+        {{- $parts := split "/" .Values.eventSource.github.repository }}
+        - owner: {{ $parts._0 }}
+          names:
+            - {{ $parts._1 }}
+      webhook:
+        endpoint: {{ printf "/%s" .Values.eventSource.github.repository }}
+        port: "12000"
+        method: POST
+        url: {{ printf "https://%s" .Values.host }}
+      events:
+        {{- toYaml .Values.eventSource.github.events | nindent 8 }}
+      {{- with .Values.eventSource.github.contentType }}
+      contentType: {{ . }}
+      {{- end }}
+      {{- with .Values.eventSource.github.filter }}
+      filter:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.eventSource.github.webhookSecret.create $webhookSecretFromExternal (ne .Values.eventSource.github.webhookSecret.name "") }}
+      webhookSecret:
+        {{- if or .Values.eventSource.github.webhookSecret.create $webhookSecretFromExternal }}
+        name: {{ include "argo-ci-trigger.webhookSecretName" . }}
+        {{- else }}
+        name: {{ .Values.eventSource.github.webhookSecret.name }}
+        {{- end }}
+        key: {{ .Values.eventSource.github.webhookSecret.key }}
+      {{- end }}
+      {{- if or .Values.eventSource.github.apiToken.create $apiTokenFromExternal (ne .Values.eventSource.github.apiToken.name "") }}
+      apiToken:
+        {{- if or .Values.eventSource.github.apiToken.create $apiTokenFromExternal }}
+        name: {{ include "argo-ci-trigger.apiTokenSecretName" . }}
+        {{- else }}
+        name: {{ .Values.eventSource.github.apiToken.name }}
+        {{- end }}
+        key: {{ .Values.eventSource.github.apiToken.key }}
+      {{- end }}

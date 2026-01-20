@@ -1,0 +1,21 @@
+{{- if .Values.eventBus.enabled -}}
+apiVersion: argoproj.io/v1alpha1
+kind: EventBus
+metadata:
+  name: {{ .Values.eventBus.name }}
+  namespace: {{ .Values.namespaceOverride | default .Release.Namespace }}
+  labels:
+    {{- include "argo-ci.labels" . | nindent 4 }}
+    {{- with .Values.eventBus.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.eventBus.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  nats:
+    native:
+      replicas: {{ .Values.eventBus.nats.native.replicas }}
+      auth: {{ .Values.eventBus.nats.native.auth }}
+{{- end }}

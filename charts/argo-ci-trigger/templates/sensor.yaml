@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: {{ include "argo-ci-trigger.fullname" . }}
+  labels:
+    {{- include "argo-ci-trigger.labels" . | nindent 4 }}
+spec:
+  eventBusName: {{ .Values.eventBusName }}
+  template:
+    serviceAccountName: argo-events-sa
+  dependencies:
+    - name: dep
+      eventSourceName: {{ include "argo-ci-trigger.fullname" . }}
+      eventName: {{ .Values.eventSource.github.configName | default (include "argo-ci-trigger.fullname" .) }}
+  triggers:
+    - template:
+        name: build-workflow-trigger
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: {{ include "argo-ci-trigger.fullname" . }}-build
+              spec:
+                serviceAccountName: {{ .Values.workflowTemplate.serviceAccountName | default "argo-events-sa" }}
+                workflowTemplateRef:
+                  name: {{ include "argo-ci-trigger.fullname" . }}
+                arguments:
+                  parameters:
+                    {{- range .Values.sensor.workflowArguments }}
+                    - name: {{ .name }}
+                      value: ""
+                    {{- end }}
+          parameters:
+            {{- toYaml .Values.sensor.parameterMapping | nindent 12 }}

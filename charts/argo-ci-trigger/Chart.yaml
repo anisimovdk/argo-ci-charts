@@ -1,0 +1,15 @@
+apiVersion: v2
+name: argo-ci-trigger
+description: A Helm chart for Argo Events GitHub webhook triggers for CI pipelines
+type: application
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - argo-events
+  - github
+  - webhook
+  - ci
+  - cd
+home: https://github.com/anisimovdk/argo-ci-charts
+maintainers:
+  - name: anisimovdk
