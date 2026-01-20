@@ -4,10 +4,9 @@ A collection of Helm charts for using Argo Workflows and Argo Events as a contin
 
 **Registry:** [Docker Hub - anisimovdk](https://hub.docker.com/repositories/anisimovdk)
 
-## Table of Contents
+**Table of Contents**
 
 - [argo-ci-charts](#argo-ci-charts)
-  - [Table of Contents](#table-of-contents)
   - [Layout](#layout)
   - [Getting started](#getting-started)
     - [Building and Publishing](#building-and-publishing)
