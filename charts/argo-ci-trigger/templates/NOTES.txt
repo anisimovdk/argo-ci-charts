@@ -1,0 +1,61 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+═══════════════════════════════════════════════════════════════════════════════
+DEPLOYED RESOURCES
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ EventSource: {{ include "argo-ci-trigger.fullname" . }}
+  - Repository: {{ .Values.eventSource.github.repository }}
+  - Events: {{ join ", " .Values.eventSource.github.events }}
+  - Port: 12000
+
+✓ Sensor: {{ include "argo-ci-trigger.fullname" . }}
+
+{{- if .Values.ingress.enabled }}
+✓ Ingress: {{ include "argo-ci-trigger.fullname" . }}-eventsource
+  - Host: {{ .Values.host }}
+  - Path: /{{ .Values.eventSource.github.repository }}
+  {{- if .Values.ingress.tls.enabled }}
+  - TLS: Enabled
+  {{- end }}
+{{- end }}
+
+═══════════════════════════════════════════════════════════════════════════════
+GITHUB WEBHOOK CONFIGURATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Configure your GitHub webhook at:
+https://github.com/{{ .Values.eventSource.github.repository }}/settings/hooks
+
+Webhook Settings:
+{{- if .Values.ingress.enabled }}
+  • Payload URL: {{ if .Values.ingress.tls.enabled }}https{{ else }}http{{ end }}://{{ .Values.host }}/{{ .Values.eventSource.github.repository }}
+{{- else }}
+  • Payload URL: http://<external-ip>:12000/{{ .Values.eventSource.github.repository }}
+    
+    Get the external service IP/hostname:
+    kubectl get svc {{ printf "%s-eventsource-svc" (include "argo-ci-trigger.fullname" .) }} -n {{ .Release.Namespace }}
+{{- end }}
+  • Content type: application/json
+  • Events: {{ join ", " .Values.eventSource.github.events }}
+  • Secret: Configure if using webhookSecret
+
+═══════════════════════════════════════════════════════════════════════════════
+MONITORING
+═══════════════════════════════════════════════════════════════════════════════
+
+View EventSource logs:
+  kubectl logs -l eventsource-name={{ include "argo-ci-trigger.fullname" . }} -n {{ .Release.Namespace }} -f
+
+View Sensor logs:
+  kubectl logs -l sensor-name={{ include "argo-ci-trigger.fullname" . }} -n {{ .Release.Namespace }} -f
+
+Check triggered workflows:
+  kubectl get workflows -n {{ .Release.Namespace }}
+
+═══════════════════════════════════════════════════════════════════════════════
+
+For documentation and examples, visit:
+https://github.com/anisimovdk/argo-ci-charts

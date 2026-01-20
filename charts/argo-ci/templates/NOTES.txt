@@ -1,0 +1,14 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }}.
+
+RBAC resources have been created:
+- ServiceAccount: {{ .Values.serviceAccount.name }}
+- Role: {{ .Values.role.name }}
+- RoleBinding: {{ .Values.roleBinding.name }}
+
+To use this ServiceAccount with Argo Events, configure your EventSource or Sensor to use:
+  serviceAccountName: {{ .Values.serviceAccount.name }}
+
+To verify the resources:
+  kubectl get serviceaccount,role,rolebinding -n {{ .Values.namespaceOverride | default .Release.Namespace }}

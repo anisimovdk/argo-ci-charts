@@ -1,0 +1,275 @@
+# Default values for argo-ci-trigger
+# This is a YAML-formatted file.
+
+# Name override for the chart resources
+nameOverride: ""
+fullnameOverride: ""
+
+# EventBus name to use for EventSource and Sensor
+# Must match the name of the EventBus resource in the namespace
+eventBusName: "argo-ci-eventbus"
+
+# REQUIRED: Webhook URL for GitHub webhooks and ingress host
+# This URL is used in both the EventSource webhook configuration and the Ingress host
+# Must be set to your actual domain or hostname before deployment
+# Example: "ci.your-domain.com"
+host: ""
+
+# Ingress configuration for the EventSource webhook
+# Should be enabled to expose the webhook endpoint, unless you are using an alternative method
+ingress:
+  enabled: true
+  # Ingress class name, if empty the default class will be used
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  tls:
+    enabled: true
+    # Name of the TLS secret for the Ingress, if not set, a default secret will be used
+    secretName: ""
+
+# EventSource configuration
+eventSource:
+  # GitHub webhook configuration
+  github:
+    # REQUIRED: GitHub repository configuration
+    # Format: "owner/repo-name"
+    # At least one eventSource must be configured with a defined repository
+    repository: ""
+
+    # GitHub events to listen for
+    # Common events: push, pull_request, release, issues, etc.
+    events:
+      - push
+
+    # Content type for webhook payload (default: json)
+    contentType: json
+
+    # Filter configuration to restrict which events trigger workflows
+    # Only pushes to master branch will trigger the workflow
+    filter:
+      expression: "body.ref == 'refs/heads/master'"
+
+    # Secret for accesing EventSource webhook
+    # Set create: true to have the chart create the secret, or false to use an existing secret
+    webhookSecret:
+      # Whether to create a new secret or use an existing one
+      create: false
+      # Name of the secret (will be created if create: true, or referenced if false)
+      name: github-webhook-secret
+      # Key within the secret
+      key: token
+      # Value for the webhook secret (only used if create: true)
+      # Leave empty and the chart will generate a random value
+      value: ""
+
+    # GitHub API token for registring webhooks and accessing private repos
+    # Set create: true to have the chart create the secret, or false to use an existing secret
+    apiToken:
+      # Whether to create a new secret or use an existing one
+      create: false
+      # Name of the secret (will be created if create: true, or referenced if false)
+      name: github-api-token
+      # Key within the secret
+      key: token
+      # Value for the API token (required if create: true)
+      value: ""
+
+# Sensor configuration for workflow triggering
+sensor:
+  # Workflow arguments to pass to the triggered workflow
+  # These define the parameter names that will be passed to the WorkflowTemplate
+  workflowArguments:
+    - name: repo_url
+    - name: revision
+
+  # Parameter mappings from EventSource payload to workflow arguments
+  # Each mapping extracts data from the webhook payload and passes it to the workflow
+  # You can use dataKey for simple field access or dataTemplate for complex transformations
+  parameterMapping:
+    - src:
+        dependencyName: dep
+        dataKey: body.repository.clone_url
+      dest: spec.arguments.parameters.0.value
+    - src:
+        dependencyName: dep
+        dataKey: body.after
+      dest: spec.arguments.parameters.1.value
+
+# ExternalSecrets configuration
+# Allows you to sync secrets from external secret stores like Doppler, AWS Secrets Manager, etc.
+# You can define multiple ExternalSecret resources as named objects
+#
+# IMPORTANT: All ExternalSecret names are automatically templated with the release name.
+# The final secret name will be: <release-name>-<secret-key>
+# Example: If release name is "myapp" and secret key is "webhook-secret",
+#          the actual secret created will be "myapp-webhook-secret"
+externalSecrets:
+  # Default secret store configuration (required if any externalSecret has create: true)
+  # Individual secrets can override these settings
+  secretStore:
+    kind: ClusterSecretStore
+    name: "doppler"
+
+  # GitHub webhook secret
+  # Final secret name will be: <release-name>-webhook-secret
+  webhook-secret:
+    create: false
+    # secretStoreRef is optional - will use default secretStore if not specified
+    secretStoreRef:
+      kind: ""
+      name: ""
+    refreshInterval: 60m
+    # Data is a map where key is the secretKey and value contains the remoteRef
+    data:
+      token:
+        key: GITHUB_WEBHOOK_SECRET
+    target:
+      creationPolicy: Owner
+      deletionPolicy: Retain
+      # Name is automatically templated with release name
+      name: ""
+      template:
+        engineVersion: v2
+        mergePolicy: Replace
+        type: Opaque
+
+  # GitHub API token
+  # Final secret name will be: <release-name>-api-token
+  api-token:
+    create: false
+    # secretStoreRef is optional - will use default secretStore if not specified
+    secretStoreRef:
+      kind: ""
+      name: ""
+    refreshInterval: 60m
+    data:
+      token:
+        key: GITHUB_API_TOKEN
+    target:
+      creationPolicy: Owner
+      deletionPolicy: Retain
+      # Name is automatically templated with release name
+      name: ""
+      template:
+        engineVersion: v2
+        mergePolicy: Replace
+        type: Opaque
+
+  # Example: Additional secrets from a different store
+  # Note: If release name is "myapp" and secret key is "db-credentials",
+  #       the final secret name will be "myapp-db-credentials"
+  # db-credentials:
+  #   create: false
+  #   secretStoreRef:
+  #     kind: SecretStore
+  #     name: vault
+  #   refreshInterval: 30m
+  #   data:
+  #     DB_PASSWORD:
+  #       key: DATABASE_PASSWORD
+  #     DB_USERNAME:
+  #       key: DATABASE_USERNAME
+  #   target:
+  #     creationPolicy: Owner
+  #     deletionPolicy: Retain
+  #     name: ""
+  #     template:
+  #       engineVersion: v2
+  #       mergePolicy: Replace
+  #       type: Opaque
+
+# WorkflowTemplate spec configuration
+# See https://argo-workflows.readthedocs.io/en/latest/workflow-templates/
+#
+# Note: Secret names in secretKeyRef will be automatically replaced with templated names:
+#   - If you reference "github-api-token" in secretKeyRef.name and the ExternalSecret
+#     "github-api-token" has create: true, it will be replaced with "<release-name>-github-api-token"
+#   - This applies to all ExternalSecrets and predefined secrets with create: true
+#   - Example: Use "name: github-api-token" in your templates, it becomes "name: myapp-github-api-token"
+workflowTemplate:
+  # Service account name for workflows (should match the service account created by argo-ci chart)
+  serviceAccountName: "argo-events-sa"
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: repo_url
+      - name: revision
+
+  templates:
+    - name: main
+      dag:
+        tasks:
+          - name: clone
+            template: git-clone
+          - name: build
+            depends: "clone"
+            template: go-build
+            arguments:
+              artifacts:
+                - name: source
+                  from: "{{tasks.clone.outputs.artifacts.source}}"
+          - name: release
+            depends: "build"
+            template: github-release
+            arguments:
+              artifacts:
+                - name: binary
+                  from: "{{tasks.build.outputs.artifacts.binary}}"
+
+# Build and release templates (will be concatenated to workflowTemplate.templates)
+buildTemplates:
+  - name: git-clone
+    container:
+      image: alpine/git:latest
+      command: [sh, -c]
+      args:
+        - |
+          mkdir -p /src
+          cd /src
+          git clone {{workflow.parameters.repo_url}} .
+          git checkout {{workflow.parameters.revision}}
+    outputs:
+      artifacts:
+        - name: source
+          path: /src
+
+  - name: go-build
+    inputs:
+      artifacts:
+        - name: source
+          path: /src
+    container:
+      image: golang:1.21-alpine
+      workingDir: /src
+      command: [sh, -c]
+      args: ["go build -o my-app main.go"]
+    outputs:
+      artifacts:
+        - name: binary
+          path: /src/my-app
+
+  - name: github-release
+    inputs:
+      artifacts:
+        - name: binary
+          path: /dist/my-app
+    container:
+      image: alpine:latest
+      env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              # Use the ExternalSecret key name here
+              # Will be automatically replaced with the templated name (e.g., myapp-github-api-token)
+              name: github-api-token
+              key: token
+      command: [sh, -c]
+      args:
+        - |
+          apk add --no-cache github-cli
+          gh release create "v-{{workflow.parameters.revision}}" /dist/my-app \
+             --repo your-github-user/your-repo-name \
+             --title "Build {{workflow.parameters.revision}}" \
+             --notes "Automated release from Argo Workflows"

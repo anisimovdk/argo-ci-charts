@@ -1,0 +1,48 @@
+# Default values for argo-ci
+namespaceOverride: ""
+
+serviceAccount:
+  # Name of the ServiceAccount for Argo Events
+  name: argo-events-sa
+  # Annotations to add to the service account
+  annotations: {}
+  # Labels to add to the service account
+  labels: {}
+
+role:
+  # Name of the Role
+  name: argo-events-role
+  # Annotations to add to the role
+  annotations: {}
+  # Labels to add to the role
+  labels: {}
+  # Additional rules to add to the role
+  rules:
+    - apiGroups: ["argoproj.io"]
+      resources: ["workflows", "workflowtemplates", "workflowtaskresults"]
+      verbs: ["create", "get", "list", "watch", "update", "patch"]
+
+roleBinding:
+  # Name of the RoleBinding
+  name: argo-events-binding
+  # Annotations to add to the role binding
+  annotations: {}
+  # Labels to add to the role binding
+  labels: {}
+
+eventBus:
+  # Enable EventBus creation
+  enabled: true
+  # Name of the EventBus
+  name: argo-ci-eventbus
+  # Annotations to add to the EventBus
+  annotations: {}
+  # Labels to add to the EventBus
+  labels: {}
+  # NATS configuration
+  nats:
+    native:
+      # Number of replicas for NATS
+      replicas: 3
+      # Authentication strategy (none, token, or tls)
+      auth: token

@@ -1,0 +1,39 @@
+{{- /* Build a map of secret name replacements */ -}}
+{{- $secretReplacements := dict -}}
+
+{{- /* Check all ExternalSecrets and build replacement map */ -}}
+{{- range $name, $secret := .Values.externalSecrets -}}
+  {{- if and (ne $name "secretStore") $secret.create -}}
+    {{- $templatedName := include "argo-ci-trigger.externalSecretName" (dict "name" $name "root" $) -}}
+    {{- $_ := set $secretReplacements $name $templatedName -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* Check predefined secrets and add to replacement map */ -}}
+{{- if .Values.eventSource.github.webhookSecret.create -}}
+  {{- $webhookName := .Values.eventSource.github.webhookSecret.name -}}
+  {{- $templatedName := include "argo-ci-trigger.webhookSecretName" . -}}
+  {{- $_ := set $secretReplacements $webhookName $templatedName -}}
+{{- end -}}
+
+{{- if .Values.eventSource.github.apiToken.create -}}
+  {{- $apiTokenName := .Values.eventSource.github.apiToken.name -}}
+  {{- $templatedName := include "argo-ci-trigger.apiTokenSecretName" . -}}
+  {{- $_ := set $secretReplacements $apiTokenName $templatedName -}}
+{{- end -}}
+
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: {{ include "argo-ci-trigger.fullname" . }}
+  labels:
+    {{- include "argo-ci-trigger.labels" . | nindent 4 }}
+spec:
+  {{- $spec := deepCopy .Values.workflowTemplate }}
+  {{- $_ := set $spec "templates" (concat $spec.templates .Values.buildTemplates) }}
+  {{- /* Convert to YAML and replace all secret names */ -}}
+  {{- $specYaml := toYaml $spec }}
+  {{- range $oldName, $newName := $secretReplacements }}
+    {{- $specYaml = $specYaml | replace (printf "name: %s" $oldName) (printf "name: %s" $newName) }}
+  {{- end }}
+  {{- $specYaml | nindent 2 }}

@@ -1,0 +1,13 @@
+apiVersion: v2
+name: argo-ci
+description: RBAC resources and EventBus for Argo Events to manage Argo Workflows
+type: application
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - argo
+  - argo-events
+  - argo-workflows
+  - argo-ci
+maintainers:
+  - name: anisimovdk

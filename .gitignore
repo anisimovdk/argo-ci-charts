@@ -1,0 +1,13 @@
+.DS_Store
+.idea/
+.vscode/
+
+# Helm
+*.tgz
+charts/*/charts/
+
+# Build/packaging
+/dist/
+
+# Logs
+*.log

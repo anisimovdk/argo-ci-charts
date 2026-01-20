@@ -1,0 +1,35 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "argo-ci-trigger.fullname" . }}-eventsource
+  labels:
+    {{- include "argo-ci-trigger.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if and .Values.ingress.className (ne .Values.ingress.className "") }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.host | quote }}
+      {{- if .Values.ingress.tls.secretName }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+      {{- end }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.host | quote }}
+      http:
+        paths:
+          - path: {{ printf "/%s" .Values.eventSource.github.repository }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ printf "%s-eventsource-svc" (include "argo-ci-trigger.fullname" .) }}
+                port:
+                  number: 12000
+{{- end }}
