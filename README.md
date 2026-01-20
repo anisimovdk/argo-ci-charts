@@ -84,7 +84,7 @@ make push-argo-ci-rbac REPOSITORY=your-dockerhub-username
 Install from OCI registry:
 
 ```bash
-helm install my-release oci://docker.io/your-username/argo-ci-rbac --version 0.1.0
+helm install my-release oci://docker.io/anisimovdk/argo-ci-rbac:0.1.0 --version 0.1.0
 ```
 
 ## Conventions
