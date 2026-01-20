@@ -1,6 +1,6 @@
 # argo-ci-charts
 
-Helm chart monorepo for Argo CI components.
+A collection of Helm charts for using Argo Workflows and Argo Events as a continuous integration (CI) engine. These charts enable you to run your build pipelines natively in Kubernetes, leveraging the power of the Argo ecosystem for event-driven workflow automation.
 
 ## Layout
 
@@ -82,4 +82,3 @@ helm install my-release oci://docker.io/your-username/argo-ci-rbac --version 0.1
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-# argo-ci-charts
