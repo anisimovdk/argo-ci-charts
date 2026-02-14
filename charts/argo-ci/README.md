@@ -19,25 +19,25 @@ helm install argo-ci ./charts/argo-ci
 
 ## Configuration
 
-| Parameter                    | Description                          | Default               |
-| ---------------------------- | ------------------------------------ | --------------------- |
-| `serviceAccount.name`        | Name of the ServiceAccount           | `argo-events-sa`      |
-| `serviceAccount.annotations` | Annotations for the ServiceAccount   | `{}`                  |
-| `serviceAccount.labels`      | Labels for the ServiceAccount        | `{}`                  |
-| `role.name`                  | Name of the Role                     | `argo-events-role`    |
-| `role.annotations`           | Annotations for the Role             | `{}`                  |
-| `role.labels`                | Labels for the Role                  | `{}`                  |
-| `role.rules`                 | RBAC rules for the Role              | See values.yaml       |
-| `roleBinding.name`           | Name of the RoleBinding              | `argo-events-binding` |
-| `roleBinding.annotations`    | Annotations for the RoleBinding      | `{}`                  |
-| `roleBinding.labels`         | Labels for the RoleBinding           | `{}`                  |
-| `eventBus.enabled`           | Enable EventBus creation             | `true`                |
-| `eventBus.name`              | Name of the EventBus                 | `argo-ci-eventbus`    |
-| `eventBus.annotations`       | Annotations for the EventBus         | `{}`                  |
-| `eventBus.labels`            | Labels for the EventBus              | `{}`                  |
-| `eventBus.nats.native.replicas` | Number of NATS replicas           | `3`                   |
-| `eventBus.nats.native.auth`  | NATS authentication strategy         | `token`               |
-| `namespaceOverride`          | Override release namespace           | `""`                  |
+| Parameter                         | Description                          | Default               |
+| --------------------------------- | ------------------------------------ | --------------------- |
+| `serviceAccount.name`             | Name of the ServiceAccount           | `argo-events-sa`      |
+| `serviceAccount.annotations`      | Annotations for the ServiceAccount   | `{}`                  |
+| `serviceAccount.labels`           | Labels for the ServiceAccount        | `{}`                  |
+| `role.name`                       | Name of the Role                     | `argo-events-role`    |
+| `role.annotations`                | Annotations for the Role             | `{}`                  |
+| `role.labels`                     | Labels for the Role                  | `{}`                  |
+| `role.rules`                      | RBAC rules for the Role              | See values.yaml       |
+| `roleBinding.name`                | Name of the RoleBinding              | `argo-events-binding` |
+| `roleBinding.annotations`         | Annotations for the RoleBinding      | `{}`                  |
+| `roleBinding.labels`              | Labels for the RoleBinding           | `{}`                  |
+| `eventBus.enabled`                | Enable EventBus creation             | `true`                |
+| `eventBus.name`                   | Name of the EventBus                 | `argo-ci-eventbus`    |
+| `eventBus.annotations`            | Annotations for the EventBus         | `{}`                  |
+| `eventBus.labels`                 | Labels for the EventBus              | `{}`                  |
+| `eventBus.nats.native.replicas`   | Number of NATS replicas              | `3`                   |
+| `eventBus.nats.native.auth`       | NATS authentication strategy         | `token`               |
+| `namespaceOverride`               | Override release namespace           | `""`                  |
 
 ## Usage
 

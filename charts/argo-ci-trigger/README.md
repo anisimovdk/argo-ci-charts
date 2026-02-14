@@ -69,6 +69,7 @@ helm install my-app ./charts/argo-ci-trigger \
 ```
 
 **Important Notes:**
+
 - The `host` parameter is **required** when ingress is enabled (default). It's used for both the Ingress host and the EventSource webhook URL.
 - The `eventSource.github.repository` parameter is **required** and must be in the format `owner/repo-name`.
 - A GitHub API token with `admin:repo_hook` permissions is **required** for automatic webhook management. You must provide it via one of three methods: `eventSource.github.apiToken` (chart-managed secret), `externalSecrets.api-token` (external secret store), or by manually creating a secret and referencing it. See [API Token Configuration](#api-token-configuration-required) for details.
@@ -78,45 +79,45 @@ helm install my-app ./charts/argo-ci-trigger \
 
 ### Required Parameters
 
-| Parameter | Description | Default | Required |
-| --------- | ----------- | ------- | -------- |
-| `host` | Webhook URL hostname for GitHub webhooks and Ingress host | `""` | Yes (when ingress is enabled) |
-| `eventSource.github.repository` | GitHub repository in format `owner/repo-name` | `""` | Yes |
-| GitHub API Token | GitHub API token with `admin:repo_hook` permissions for automatic webhook management (must be provided via one of three methods - see [API Token Configuration](#api-token-configuration-required)) | N/A | Yes |
+| Parameter                         | Description                                                                                         | Default | Required                      |
+| --------------------------------- | --------------------------------------------------------------------------------------------------- | ------- | ----------------------------- |
+| `host`                            | Webhook URL hostname for GitHub webhooks and Ingress host                                           | `""`    | Yes (when ingress is enabled) |
+| `eventSource.github.repository`   | GitHub repository in format `owner/repo-name`                                                       | `""`    | Yes                           |
+| GitHub API Token                  | GitHub API token with `admin:repo_hook` permissions for automatic webhook management (see API docs) | N/A     | Yes                           |
 
 ### Global Configuration
 
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `nameOverride` | Override chart name | `""` |
-| `fullnameOverride` | Override full resource name | `""` |
-| `eventBusName` | EventBus name for EventSource and Sensor (must match the EventBus resource in your namespace) | `argo-ci-eventbus` |
+| Parameter           | Description                                                                                   | Default             |
+| ------------------- | --------------------------------------------------------------------------------------------- | ------------------- |
+| `nameOverride`      | Override chart name                                                                           | `""`                |
+| `fullnameOverride`  | Override full resource name                                                                   | `""`                |
+| `eventBusName`      | EventBus name for EventSource and Sensor (must match the EventBus resource in your namespace) | `argo-ci-eventbus`  |
 
 ### Ingress Configuration
 
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `ingress.enabled` | Enable Ingress for the EventSource webhook | `true` |
-| `ingress.className` | Ingress class name | `""` |
-| `ingress.annotations` | Ingress annotations | `{}` |
-| `ingress.tls.enabled` | Enable TLS for Ingress | `true` |
-| `ingress.tls.secretName` | Name of the TLS secret | `""` |
+| Parameter                 | Description                                | Default |
+| ------------------------- | ------------------------------------------ | ------- |
+| `ingress.enabled`         | Enable Ingress for the EventSource webhook | `true`  |
+| `ingress.className`       | Ingress class name                         | `""`    |
+| `ingress.annotations`     | Ingress annotations                        | `{}`    |
+| `ingress.tls.enabled`     | Enable TLS for Ingress                     | `true`  |
+| `ingress.tls.secretName`  | Name of the TLS secret                     | `""`    |
 
 ### EventSource Configuration
 
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `eventSource.github.events` | List of GitHub events to listen for (e.g., push, pull_request, release) | `["push"]` |
-| `eventSource.github.contentType` | Content type for webhook payload | `json` |
-| `eventSource.github.filter.expression` | Filter expression to restrict which events trigger workflows (uses expr language) | `body.ref == 'refs/heads/master'` |
-| `eventSource.github.webhookSecret.create` | Create webhook secret with the chart | `false` |
-| `eventSource.github.webhookSecret.name` | Name of the webhook secret | `github-webhook-secret` |
-| `eventSource.github.webhookSecret.key` | Key within the secret | `token` |
-| `eventSource.github.webhookSecret.value` | Secret value (auto-generated if empty when create: true) | `""` |
-| `eventSource.github.apiToken.create` | Create API token secret with the chart | `false` |
-| `eventSource.github.apiToken.name` | Name of the API token secret (required if not using create or externalSecrets) | `github-api-token` |
-| `eventSource.github.apiToken.key` | Key within the secret | `token` |
-| `eventSource.github.apiToken.value` | API token value (required if create: true; see [API Token Configuration](#api-token-configuration-required) for all options) | `""` |
+| Parameter                                   | Description                                                                           | Default                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------- |
+| `eventSource.github.events`                 | List of GitHub events to listen for (e.g., push, pull_request, release)               | `["push"]`                        |
+| `eventSource.github.contentType`            | Content type for webhook payload                                                      | `json`                            |
+| `eventSource.github.filter.expression`      | Filter expression to restrict which events trigger workflows (uses expr language)     | `body.ref == 'refs/heads/master'` |
+| `eventSource.github.webhookSecret.create`   | Create webhook secret with the chart                                                  | `false`                           |
+| `eventSource.github.webhookSecret.name`     | Name of the webhook secret                                                            | `github-webhook-secret`           |
+| `eventSource.github.webhookSecret.key`      | Key within the secret                                                                 | `token`                           |
+| `eventSource.github.webhookSecret.value`    | Secret value (auto-generated if empty when create: true)                              | `""`                              |
+| `eventSource.github.apiToken.create`        | Create API token secret with the chart                                                | `false`                           |
+| `eventSource.github.apiToken.name`          | Name of the API token secret (required if not using create or externalSecrets)        | `github-api-token`                |
+| `eventSource.github.apiToken.key`           | Key within the secret                                                                 | `token`                           |
+| `eventSource.github.apiToken.value`         | API token value (required if create: true; see API Token Configuration documentation) | `""`                              |
 
 **Filter Expression Examples:**
 
@@ -211,10 +212,10 @@ eventSource:
 
 The Sensor defines how GitHub webhook events are mapped to Workflow parameters.
 
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `sensor.workflowArguments` | List of workflow parameter names | `[{name: repo_url}, {name: revision}]` |
-| `sensor.parameterMapping` | Maps webhook payload fields to workflow parameters | See values.yaml |
+| Parameter                   | Description                                         | Default                                 |
+| --------------------------- | --------------------------------------------------- | --------------------------------------- |
+| `sensor.workflowArguments`  | List of workflow parameter names                    | `[{name: repo_url}, {name: revision}]`  |
+| `sensor.parameterMapping`   | Maps webhook payload fields to workflow parameters  | See values.yaml                         |
 
 **Default Parameter Mapping:**
 
@@ -262,39 +263,39 @@ All ExternalSecret names are automatically prefixed with the release name for co
 
 **Examples:**
 
-| Release Name | Secret Key | Actual Secret Name |
-|--------------|------------|--------------------|
-| `myapp` | `webhook-secret` | `myapp-webhook-secret` |
-| `myapp` | `api-token` | `myapp-api-token` |
-| `myapp` | `db-credentials` | `myapp-db-credentials` |
-| `production-api` | `oauth-tokens` | `production-api-oauth-tokens` |
+| Release Name      | Secret Key        | Actual Secret Name             |
+| ----------------- | ----------------- | ------------------------------ |
+| `myapp`           | `webhook-secret`  | `myapp-webhook-secret`         |
+| `myapp`           | `api-token`       | `myapp-api-token`              |
+| `myapp`           | `db-credentials`  | `myapp-db-credentials`         |
+| `production-api`  | `oauth-tokens`    | `production-api-oauth-tokens`  |
 
 This ensures that multiple releases can coexist in the same namespace without secret name conflicts. The generated Kubernetes Secret uses the same name as the ExternalSecret.
 
 #### Configuration Parameters
 
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `externalSecrets.secretStore.kind` | Default SecretStore kind | `ClusterSecretStore` |
-| `externalSecrets.secretStore.name` | Default SecretStore name | `doppler` |
-| `externalSecrets.webhook-secret.create` | Create ExternalSecret for GitHub webhook | `false` |
-| `externalSecrets.webhook-secret.secretStoreRef.kind` | Override default store kind | `""` |
-| `externalSecrets.webhook-secret.secretStoreRef.name` | Override default store name | `""` |
-| `externalSecrets.webhook-secret.refreshInterval` | How often to refresh the secret | `60m` |
-| `externalSecrets.webhook-secret.data` | Data mapping from external store | See values.yaml |
-| `externalSecrets.api-token.create` | Create ExternalSecret for GitHub API token | `false` |
-| `externalSecrets.api-token.secretStoreRef.kind` | Override default store kind | `""` |
-| `externalSecrets.api-token.secretStoreRef.name` | Override default store name | `""` |
-| `externalSecrets.api-token.refreshInterval` | How often to refresh the secret | `60m` |
-| `externalSecrets.api-token.data` | Data mapping from external store | See values.yaml |
+| Parameter                                            | Description                                | Default               |
+| ---------------------------------------------------- | ------------------------------------------ | --------------------- |
+| `externalSecrets.secretStore.kind`                   | Default SecretStore kind                   | `ClusterSecretStore`  |
+| `externalSecrets.secretStore.name`                   | Default SecretStore name                   | `doppler`             |
+| `externalSecrets.webhook-secret.create`              | Create ExternalSecret for GitHub webhook   | `false`               |
+| `externalSecrets.webhook-secret.secretStoreRef.kind` | Override default store kind                | `""`                  |
+| `externalSecrets.webhook-secret.secretStoreRef.name` | Override default store name                | `""`                  |
+| `externalSecrets.webhook-secret.refreshInterval`     | How often to refresh the secret            | `60m`                 |
+| `externalSecrets.webhook-secret.data`                | Data mapping from external store           | See values.yaml       |
+| `externalSecrets.api-token.create`                   | Create ExternalSecret for GitHub API token | `false`               |
+| `externalSecrets.api-token.secretStoreRef.kind`      | Override default store kind                | `""`                  |
+| `externalSecrets.api-token.secretStoreRef.name`      | Override default store name                | `""`                  |
+| `externalSecrets.api-token.refreshInterval`          | How often to refresh the secret            | `60m`                 |
+| `externalSecrets.api-token.data`                     | Data mapping from external store           | See values.yaml       |
 
 ### WorkflowTemplate Configuration
 
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `workflowTemplate` | Full WorkflowTemplate spec (entrypoint, arguments, templates) | See values.yaml |
-| `workflowTemplate.serviceAccountName` | Service account for workflow execution | `argo-events-sa` |
-| `buildTemplates` | Additional build/release templates merged into workflowTemplate.templates | See values.yaml |
+| Parameter                             | Description                                                                  | Default          |
+| ------------------------------------- | ---------------------------------------------------------------------------- | ---------------- |
+| `workflowTemplate`                    | Full WorkflowTemplate spec (entrypoint, arguments, templates)                | See values.yaml  |
+| `workflowTemplate.serviceAccountName` | Service account for workflow execution                                       | `argo-events-sa` |
+| `buildTemplates`                      | Additional build/release templates merged into workflowTemplate.templates    | See values.yaml  |
 
 **Secret Name Templating:**
 
@@ -323,28 +324,28 @@ The chart automatically generates resource names based on your Helm release name
 
 ### Auto-Generated Names
 
-| Resource | Name Pattern | Example (release: `myapp`) |
-| -------- | ------------ | -------------------------- |
-| EventSource | `<release-name>` | `myapp` |
-| Sensor | `<release-name>` | `myapp` |
-| Service | `<release-name>-eventsource-svc` | `myapp-eventsource-svc` |
-| Ingress | `<release-name>` | `myapp` |
-| WorkflowTemplate | `<release-name>` | `myapp` |
-| Workflow generateName | `<release-name>-build-` | `myapp-build-abc123` |
-| ExternalSecret | `<release-name>-<secret-key>` | `myapp-webhook-secret` |
-| Predefined Secret | `<release-name>-<secret-type>` | `myapp-webhook-secret` |
+| Resource              | Name Pattern                    | Example (release: `myapp`)  |
+| --------------------- | ------------------------------- | --------------------------- |
+| EventSource           | `<release-name>`                | `myapp`                     |
+| Sensor                | `<release-name>`                | `myapp`                     |
+| Service               | `<release-name>-eventsource-svc`| `myapp-eventsource-svc`     |
+| Ingress               | `<release-name>`                | `myapp`                     |
+| WorkflowTemplate      | `<release-name>`                | `myapp`                     |
+| Workflow generateName | `<release-name>-build-`         | `myapp-build-abc123`        |
+| ExternalSecret        | `<release-name>-<secret-key>`   | `myapp-webhook-secret`      |
+| Predefined Secret     | `<release-name>-<secret-type>`  | `myapp-webhook-secret`      |
 
 ### Fixed/Hardcoded Values
 
 These values are hardcoded in the chart templates:
 
-| Setting | Value | Description |
-| ------- | ----- | ----------- |
-| Webhook endpoint | `/<owner>/<repo-name>` | Derived from `eventSource.github.repository` |
-| Webhook port | `12000` | Service and EventSource port |
-| Webhook method | `POST` | HTTP method for webhook |
-| Sensor service account | `argo-events-sa` | From argo-ci chart |
-| Workflow operation | `submit` | Sensor workflow operation |
+| Setting                | Value                  | Description                                   |
+| ---------------------- | ---------------------- | --------------------------------------------- |
+| Webhook endpoint       | `/<owner>/<repo-name>` | Derived from `eventSource.github.repository`  |
+| Webhook port           | `12000`                | Service and EventSource port                  |
+| Webhook method         | `POST`                 | HTTP method for webhook                       |
+| Sensor service account | `argo-events-sa`       | From argo-ci chart                            |
+| Workflow operation     | `submit`               | Sensor workflow operation                     |
 
 ## Usage Examples
 
@@ -408,6 +409,7 @@ helm install my-app oci://docker.io/anisimovdk/argo-ci-trigger --version 0.1.0 \
 ```
 
 This creates:
+
 - ExternalSecret: `my-app-webhook-secret` → Kubernetes Secret: `my-app-webhook-secret`
 - ExternalSecret: `my-app-api-token` → Kubernetes Secret: `my-app-api-token`
 
@@ -520,12 +522,13 @@ After deploying the chart, GitHub webhooks are automatically created and managed
 
 The webhook endpoint is automatically constructed as:
 
-```
+```url
 https://<host>/<owner>/<repo-name>
 ```
 
 **Example:** If `host=ci.example.com` and `repository=myorg/myrepo`:
-```
+
+```url
 https://ci.example.com/myorg/myrepo
 ```
 
@@ -576,42 +579,45 @@ kubectl logs -l workflows.argoproj.io/workflow-template=<release-name> -f
 
 The chart's default configuration passes these parameters to workflows:
 
-| Parameter | Webhook Path | Description | Example |
-| --------- | ------------ | ----------- | ------- |
-| `repo_url` | `body.repository.clone_url` | Repository clone URL | `https://github.com/myorg/myrepo.git` |
-| `revision` | `body.after` | Commit SHA (for push events) | `abc123def456...` |
+| Parameter  | Webhook Path                | Description                  | Example                               |
+| ---------- | --------------------------- | ---------------------------- | ------------------------------------- |
+| `repo_url` | `body.repository.clone_url` | Repository clone URL         | `https://github.com/myorg/myrepo.git` |
+| `revision` | `body.after`                | Commit SHA (for push events) | `abc123def456...`                     |
 
 ### Additional Available Data
 
 You can access these fields from the GitHub webhook payload for custom parameter mappings:
 
 #### Repository Information
-| Webhook Path | Description | Example |
-| ------------ | ----------- | ------- |
-| `body.repository.name` | Repository name | `myrepo` |
-| `body.repository.full_name` | Full repository name | `myorg/myrepo` |
-| `body.repository.owner.login` | Repository owner | `myorg` |
-| `body.repository.html_url` | Repository web URL | `https://github.com/myorg/myrepo` |
+
+| Webhook Path                  | Description          | Example                           |
+| ----------------------------- | -------------------- | --------------------------------- |
+| `body.repository.name`        | Repository name      | `myrepo`                          |
+| `body.repository.full_name`   | Full repository name | `myorg/myrepo`                    |
+| `body.repository.owner.login` | Repository owner     | `myorg`                           |
+| `body.repository.html_url`    | Repository web URL   | `https://github.com/myorg/myrepo` |
 
 #### Commit Information (Push Events)
-| Webhook Path | Description | Example |
-| ------------ | ----------- | ------- |
-| `body.ref` | Git reference | `refs/heads/main` |
-| `body.before` | Previous commit SHA | `xyz789...` |
-| `body.after` | New commit SHA | `abc123...` |
-| `body.head_commit.message` | Commit message | `Fix bug in build script` |
-| `body.head_commit.author.name` | Commit author name | `John Doe` |
-| `body.head_commit.author.email` | Commit author email | `john@example.com` |
-| `body.pusher.name` | Pusher name | `johndoe` |
+
+| Webhook Path                    | Description         | Example                    |
+| ------------------------------- | ------------------- | -------------------------- |
+| `body.ref`                      | Git reference       | `refs/heads/main`          |
+| `body.before`                   | Previous commit SHA | `xyz789...`                |
+| `body.after`                    | New commit SHA      | `abc123...`                |
+| `body.head_commit.message`      | Commit message      | `Fix bug in build script`  |
+| `body.head_commit.author.name`  | Commit author name  | `John Doe`                 |
+| `body.head_commit.author.email` | Commit author email | `john@example.com`         |
+| `body.pusher.name`              | Pusher name         | `johndoe`                  |
 
 #### Pull Request Information
-| Webhook Path | Description | Example |
-| ------------ | ----------- | ------- |
-| `body.pull_request.number` | PR number | `42` |
-| `body.pull_request.title` | PR title | `Add new feature` |
-| `body.pull_request.head.ref` | Source branch | `feature-branch` |
-| `body.pull_request.base.ref` | Target branch | `main` |
-| `body.pull_request.head.sha` | Source commit SHA | `abc123...` |
+
+| Webhook Path                  | Description       | Example          |
+| ----------------------------- | ----------------- | ---------------- |
+| `body.pull_request.number`    | PR number         | `42`             |
+| `body.pull_request.title`     | PR title          | `Add new feature`|
+| `body.pull_request.head.ref`  | Source branch     | `feature-branch` |
+| `body.pull_request.base.ref`  | Target branch     | `main`           |
+| `body.pull_request.head.sha`  | Source commit SHA | `abc123...`      |
 
 ### Usage in Parameter Mapping
 
