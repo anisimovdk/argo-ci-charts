@@ -28,6 +28,7 @@ spec:
         - owner: {{ $parts._0 }}
           names:
             - {{ $parts._1 }}
+      active: true
       webhook:
         endpoint: {{ printf "/%s" .Values.eventSource.github.repository }}
         port: "12000"

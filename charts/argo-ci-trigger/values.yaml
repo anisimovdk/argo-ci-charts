@@ -57,7 +57,7 @@ eventSource:
       # Whether to create a new secret or use an existing one
       create: false
       # Name of the secret (will be created if create: true, or referenced if false)
-      name: github-webhook-secret
+      name: webhook-secret
       # Key within the secret
       key: token
       # Value for the webhook secret (only used if create: true)
@@ -70,7 +70,7 @@ eventSource:
       # Whether to create a new secret or use an existing one
       create: false
       # Name of the secret (will be created if create: true, or referenced if false)
-      name: github-api-token
+      name: api-token
       # Key within the secret
       key: token
       # Value for the API token (required if create: true)

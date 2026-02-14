@@ -2,7 +2,7 @@
 
 A collection of Helm charts for using Argo Workflows and Argo Events as a continuous integration (CI) engine. These charts enable you to run your build pipelines natively in Kubernetes, leveraging the power of the Argo ecosystem for event-driven workflow automation.
 
-**Registry:** [Docker Hub - anisimovdk](https://hub.docker.com/repositories/anisimovdk)
+**Registry:** [OCI Helm Charts](https://hub.docker.com/repositories/anisimovdk)
 
 **Table of Contents**:
 
@@ -68,7 +68,7 @@ Deploys GitHub webhook listeners and CI workflow templates using Argo Events.
 2. Install a GitHub webhook trigger:
 
    ```bash
-   helm install my-app-ci oci://docker.io/anisimovdk/argo-ci-trigger --version 0.1.1 \
+   helm install my-app-ci oci://docker.io/anisimovdk/argo-ci-trigger --version 0.1.0 \
      --set host=ci.example.com \
      --set eventSource.github.repository=myorg/myrepo
    ```
@@ -91,7 +91,7 @@ Install from OCI registry (Docker Hub):
 helm install argo-ci oci://docker.io/anisimovdk/argo-ci --version 0.1.0
 
 # Install argo-ci-trigger (GitHub webhooks)
-helm install my-app-ci oci://docker.io/anisimovdk/argo-ci-trigger --version 0.1.1 \
+helm install my-app-ci oci://docker.io/anisimovdk/argo-ci-trigger --version 0.1.0 \
   --set host=ci.example.com \
   --set eventSource.github.repository=myorg/myrepo
 ```

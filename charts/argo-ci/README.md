@@ -36,7 +36,7 @@ helm install argo-ci ./charts/argo-ci
 | `eventBus.annotations`       | Annotations for the EventBus         | `{}`                  |
 | `eventBus.labels`            | Labels for the EventBus              | `{}`                  |
 | `eventBus.nats.native.replicas` | Number of NATS replicas           | `3`                   |
-| `eventBus.nats.native.auth`  | NATS authentication strategy         | `none`                |
+| `eventBus.nats.native.auth`  | NATS authentication strategy         | `token`               |
 | `namespaceOverride`          | Override release namespace           | `""`                  |
 
 ## Usage
